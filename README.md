@@ -1,4 +1,4 @@
 NonBlokingNetwork
 =================
 
-There is reseach for non blocking network calls
+There is a reseach for non blocking network calls
