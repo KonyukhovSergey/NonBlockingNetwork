@@ -23,12 +23,11 @@ public class BufferReader
 		data = new byte[capacity];
 	}
 
-	public String read(ByteBuffer buffer, int count)
+	public String read(ByteBuffer buffer)
 	{
-		while (count > 0)
+		while (buffer.remaining() > 0)
 		{
 			int value = buffer.get();
-			count--;
 
 			switch (state)
 			{

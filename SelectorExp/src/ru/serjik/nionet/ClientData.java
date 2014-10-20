@@ -77,9 +77,11 @@ public class ClientData
 
 		if (count > 0)
 		{
+			buffer.limit(count);
+			
 			String line;
 
-			while ((line = reader.read(buffer, count)) != null)
+			while ((line = reader.read(buffer)) != null)
 			{
 				if (line.length() > 0)
 				{
