@@ -55,13 +55,13 @@ public class NioNetServer implements ClientListener
 	@Override
 	public void onMessage(ClientData client, String message) throws IOException
 	{
-		if (message.equals("quit"))
+		if (message.startsWith("quit"))
 		{
 			client.close();
 			clients.remove(client);
 			broadcast("client " + client.toString() + " has qiut");
 		}
-		else if (message.equals("info"))
+		else if (message.startsWith("info"))
 		{
 			client.send("cliens count = " + clients.size());
 		}
