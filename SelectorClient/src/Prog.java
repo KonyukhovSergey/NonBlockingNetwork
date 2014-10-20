@@ -18,6 +18,7 @@ public class Prog
 		try
 		{
 			System.out.println("dd");
+			
 			NioNetClient client = new NioNetClient("localhost", 11001);
 
 			while (true)
@@ -36,6 +37,11 @@ public class Prog
 				}
 
 				Thread.sleep(1);
+				
+				if(client.state == 2)
+				{
+					break;
+				}
 			}
 		}
 		catch (Exception e)

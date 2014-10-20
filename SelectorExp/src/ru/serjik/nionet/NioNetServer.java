@@ -22,33 +22,55 @@ public class NioNetServer implements ClientListener
 		clientAcceptor.close();
 	}
 
-	public void tick() throws IOException
+	public void tick()
 	{
-		SocketChannel socketChannel = clientAcceptor.accept();
-
-		if (socketChannel != null)
+		try
 		{
-			clients.add(new ClientData(socketChannel, this));
+			SocketChannel socketChannel = clientAcceptor.accept();
+			if (socketChannel != null)
+			{
+				ClientData client = new ClientData(socketChannel, this);
+				broadcast(client.toString() + " has joined");
+				clients.add(client);
+			}
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
 		}
 
 		for (Iterator<ClientData> iterator = clients.iterator(); iterator.hasNext();)
 		{
 			ClientData clientData = iterator.next();
 
-			if (clientData.recv() == false)
+			try
+			{
+				clientData.recv();
+				clientData.send(null);
+			}
+			catch (IOException e)
 			{
 				iterator.remove();
+				broadcast(clientData.toString() + " has removed");
+				// e.printStackTrace();
 			}
-
-			clientData.send(null);
 		}
 	}
 
-	public void broadcast(String message) throws IOException
+	public void broadcast(String message)
 	{
-		for (ClientData client : clients)
+		for (Iterator<ClientData> iterator = clients.iterator(); iterator.hasNext();)
 		{
-			client.send(message);
+			ClientData client = iterator.next();
+
+			try
+			{
+				client.send(message);
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -57,9 +79,8 @@ public class NioNetServer implements ClientListener
 	{
 		if (message.equals("quit"))
 		{
+			broadcast("client " + client.toString() + " want to quit");
 			client.close();
-			clients.remove(client);
-			broadcast("client " + client.toString() + " has quit");
 		}
 		else if (message.equals("info"))
 		{

@@ -33,6 +33,11 @@ public class ClientData
 		messages.clear();
 		socket.close();
 	}
+	
+	public boolean isOpen()
+	{
+		return socket.isOpen();
+	}
 
 	public void send(String message) throws IOException
 	{

@@ -8,7 +8,7 @@ public class NioNetClient implements ClientListener
 {
 	private ClientData clientData;
 	private SocketChannel socket;
-	private int state = 0;
+	public int state = 0;
 
 	public NioNetClient(String host, int port) throws IOException
 	{
@@ -32,7 +32,7 @@ public class NioNetClient implements ClientListener
 		case 1:
 			if (clientData.recv() == false)
 			{
-				clientData.close();
+				//clientData.close();
 				state = 2;
 				break;
 			}
