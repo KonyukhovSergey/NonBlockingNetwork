@@ -16,6 +16,7 @@ import java.util.List;
 
 import ru.serjik.nionet.ClientAcceptor;
 import ru.serjik.nionet.ClientData;
+import ru.serjik.nionet.ConsoleLineReader;
 import ru.serjik.nionet.NioNetServer;
 
 public class Prog
@@ -33,11 +34,11 @@ public class Prog
 			{
 				server.tick();
 
-				Thread.sleep(333);
+				Thread.sleep(1);
 
-				String cmd = read(System.in);
+				String cmd = ConsoleLineReader.read(System.in);
 
-				if (cmd.startsWith("stop"))
+				if (cmd.equals("stop"))
 				{
 					break;
 				}
@@ -56,16 +57,4 @@ public class Prog
 
 		System.out.println("programm stoped");
 	}
-
-	private static String read(InputStream stream) throws IOException
-	{
-		if (stream.available() > 0)
-		{
-			byte[] data = new byte[stream.available()];
-			stream.read(data);
-			return new String(data);
-		}
-		return "";
-	}
-
 }

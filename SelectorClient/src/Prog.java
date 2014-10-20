@@ -4,8 +4,11 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
+import org.omg.CORBA.Environment;
+
 import ru.serjik.nionet.BufferWriter;
 import ru.serjik.nionet.ClientData;
+import ru.serjik.nionet.ConsoleLineReader;
 import ru.serjik.nionet.NioNetClient;
 
 public class Prog
@@ -20,10 +23,10 @@ public class Prog
 			while (true)
 			{
 				client.tick();
-				
-				String cmd = read(System.in);
 
-				if (cmd.startsWith("stop"))
+				String cmd = ConsoleLineReader.read(System.in);
+
+				if (cmd.equals("stop"))
 				{
 					break;
 				}
@@ -31,24 +34,13 @@ public class Prog
 				{
 					client.send(cmd);
 				}
-				
-				Thread.sleep(333);
+
+				Thread.sleep(1);
 			}
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
-	}
-	
-	private static String read(InputStream stream) throws IOException
-	{
-		if (stream.available() > 0)
-		{
-			byte[] data = new byte[stream.available()];
-			stream.read(data);
-			return new String(data);
-		}
-		return "";
 	}
 }
