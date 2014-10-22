@@ -4,55 +4,56 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 
 public class ClientData
 {
 	private final static int BUFFER_SIZE = 4096;
-	private final static int TIME_OUT = 15000;
 
 	private ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
 	private ByteBuffer sendBuffer = ByteBuffer.allocate(BUFFER_SIZE);
 	private BufferReader reader = new BufferReader(BUFFER_SIZE);
 
 	private SocketChannel socket;
-	private ClientListener clientListener;
-
 	private Queue<String> messages = new LinkedList<String>();
 
-	public ClientData(SocketChannel socket, ClientListener clientListener)
+	public Object tag;
+
+	public ClientData(SocketChannel socket)
 	{
 		this.socket = socket;
-		this.clientListener = clientListener;
 		sendBuffer.limit(0);
 	}
 
-	public void close() throws IOException
+	public void close()
 	{
 		messages.clear();
-		socket.close();
+		
+		try
+		{
+			socket.close();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
-	
+
 	public boolean isOpen()
 	{
 		return socket.isOpen();
 	}
 
-	public void send(String message) throws IOException
+	public void send(String message)
 	{
-		if (messages.size() == 0 && sendBuffer.hasRemaining() == false && message != null)
-		{
-			BufferWriter.write(sendBuffer, message);
-			socket.write(sendBuffer);
-			return;
-		}
-
 		if (message != null)
 		{
 			messages.add(message);
 		}
-
+	}
+	
+	public void send() throws IOException
+	{
 		if (sendBuffer.hasRemaining())
 		{
 			socket.write(sendBuffer);
@@ -65,7 +66,7 @@ public class ClientData
 		}
 	}
 
-	public boolean recv() throws IOException
+	public boolean recv(MessageListener messageListener) throws IOException
 	{
 		buffer.clear();
 
@@ -73,7 +74,6 @@ public class ClientData
 
 		if (count == -1)
 		{
-			System.out.println("readed -1 bytes");
 			socket.close();
 			return false;
 		}
@@ -83,14 +83,14 @@ public class ClientData
 		if (count > 0)
 		{
 			buffer.limit(count);
-			
+
 			String line;
 
 			while ((line = reader.read(buffer)) != null)
 			{
 				if (line.length() > 0)
 				{
-					clientListener.onMessage(this, line);
+					messageListener.onMessage(this, line);
 				}
 			}
 		}

@@ -4,40 +4,74 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
 
-public class NioNetClient implements ClientListener
+public class NioNetClient
 {
+	public static final int STATE_CONNECTING = 0;
+	public static final int STATE_CONNECTED = 1;
+	public static final int STATE_DISCONNECTED = 2;
+
 	private ClientData clientData;
 	private SocketChannel socket;
-	public int state = 0;
+	public int state = STATE_CONNECTING;
 
-	public NioNetClient(String host, int port) throws IOException
+	private NioNetClientListener clientListener;
+
+	public NioNetClient(String host, int port, NioNetClientListener clientListener)
 	{
-		socket = SocketChannel.open();
-		socket.configureBlocking(false);
-		socket.connect(new InetSocketAddress(host, port));
+		this.clientListener = clientListener;
+
+		try
+		{
+			socket = SocketChannel.open();
+			socket.configureBlocking(false);
+			socket.connect(new InetSocketAddress(host, port));
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+			state = STATE_DISCONNECTED;
+			clientListener.onDisconnect();
+		}
 	}
 
-	public void tick() throws IOException
+	public void tick()
 	{
 		switch (state)
 		{
-		case 0:
-			if (socket.finishConnect())
+		case STATE_CONNECTING:
+			try
 			{
-				clientData = new ClientData(socket, this);
-				state = 1;
+				if (socket.finishConnect())
+				{
+					clientData = new ClientData(socket);
+					state = STATE_CONNECTED;
+					clientListener.onConnect();
+				}
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+				state = STATE_DISCONNECTED;
 			}
 			break;
 
-		case 1:
-			if (clientData.recv() == false)
+		case STATE_CONNECTED:
+			try
 			{
-				//clientData.close();
-				state = 2;
-				break;
+				if (clientData.recv(clientListener) == false)
+				{
+					state = STATE_DISCONNECTED;
+					clientListener.onDisconnect();
+					break;
+				}
+				clientData.send();
 			}
-			clientData.send(null);
-
+			catch (IOException e)
+			{
+				e.printStackTrace();
+				state = STATE_DISCONNECTED;
+				clientListener.onDisconnect();
+			}
 			break;
 
 		case 2:
@@ -45,18 +79,11 @@ public class NioNetClient implements ClientListener
 		}
 	}
 
-	public void send(String message) throws IOException
+	public void send(String message)
 	{
-		if (state == 1)
+		if (state == STATE_CONNECTED)
 		{
 			clientData.send(message);
 		}
 	}
-
-	@Override
-	public void onMessage(ClientData client, String message) throws IOException
-	{
-		System.out.println(message);
-	}
-
 }

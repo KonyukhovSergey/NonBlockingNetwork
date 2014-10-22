@@ -18,17 +18,51 @@ import ru.serjik.nionet.ClientAcceptor;
 import ru.serjik.nionet.ClientData;
 import ru.serjik.nionet.ConsoleLineReader;
 import ru.serjik.nionet.NioNetServer;
+import ru.serjik.nionet.NioNetServerListener;
 
 public class Prog
 {
 	/**
 	 * @param args
 	 */
+	private static NioNetServer server;
+
 	public static void main(String[] args)
 	{
 		try
 		{
-			NioNetServer server = new NioNetServer(11001);
+			server = new NioNetServer(11001, new NioNetServerListener()
+			{
+				@Override
+				public void onMessage(ClientData client, String message)
+				{
+					if (message.equals("quit"))
+					{
+						server.broadcast(client.toString() + " want to quit");
+						client.close();
+					}
+					else if (message.equals("info"))
+					{
+						client.send("cliens count = " + server.clients().size());
+					}
+					else
+					{
+						server.broadcast(client.toString() + ": " + message);
+					}
+				}
+
+				@Override
+				public void onDisconnect(ClientData client)
+				{
+					server.broadcast(client.toString() + " has removed");					
+				}
+
+				@Override
+				public void onAccept(ClientData client)
+				{
+					server.broadcast(client.toString() + " has joined");					
+				}
+			});
 
 			while (true)
 			{

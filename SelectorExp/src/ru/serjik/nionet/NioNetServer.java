@@ -6,14 +6,15 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class NioNetServer implements ClientListener
+public class NioNetServer
 {
 	private List<ClientData> clients = new ArrayList<ClientData>();
-
 	private ClientAcceptor clientAcceptor;
+	private NioNetServerListener serverListener;
 
-	public NioNetServer(int port) throws IOException
+	public NioNetServer(int port, NioNetServerListener serverListener) throws IOException
 	{
+		this.serverListener = serverListener;
 		clientAcceptor = new ClientAcceptor(port);
 	}
 
@@ -27,68 +28,47 @@ public class NioNetServer implements ClientListener
 		try
 		{
 			SocketChannel socketChannel = clientAcceptor.accept();
+
 			if (socketChannel != null)
 			{
-				ClientData client = new ClientData(socketChannel, this);
-				broadcast(client.toString() + " has joined");
+				ClientData client = new ClientData(socketChannel);
+				serverListener.onAccept(client);
 				clients.add(client);
 			}
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
+			// TODO: it is need the decision to be or not to be
 		}
 
-		for (Iterator<ClientData> iterator = clients.iterator(); iterator.hasNext();)
-		{
-			ClientData clientData = iterator.next();
-
-			try
-			{
-				clientData.recv();
-				clientData.send(null);
-			}
-			catch (IOException e)
-			{
-				iterator.remove();
-				broadcast(clientData.toString() + " has removed");
-				// e.printStackTrace();
-			}
-		}
-	}
-
-	public void broadcast(String message)
-	{
 		for (Iterator<ClientData> iterator = clients.iterator(); iterator.hasNext();)
 		{
 			ClientData client = iterator.next();
 
 			try
 			{
-				client.send(message);
+				client.recv(serverListener);
+				client.send();
 			}
 			catch (IOException e)
 			{
-				e.printStackTrace();
+				iterator.remove();
+				serverListener.onDisconnect(client);
 			}
 		}
 	}
 
-	@Override
-	public void onMessage(ClientData client, String message) throws IOException
+	public List<ClientData> clients()
 	{
-		if (message.equals("quit"))
+		return clients;
+	}
+
+	public void broadcast(String message)
+	{
+		for (ClientData client : clients)
 		{
-			broadcast("client " + client.toString() + " want to quit");
-			client.close();
-		}
-		else if (message.equals("info"))
-		{
-			client.send("cliens count = " + clients.size());
-		}
-		else
-		{
-			broadcast("client " + client.toString() + ": " + message);
+			client.send(message);
 		}
 	}
 }
