@@ -2,7 +2,6 @@ package ru.serjik.nionet;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.StandardSocketOptions;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
@@ -23,8 +22,8 @@ public class ClientAcceptor
 		if (socketChannel != null)
 		{
 			socketChannel.configureBlocking(false);
-			socketChannel.setOption(StandardSocketOptions.SO_KEEPALIVE, true);
-			socketChannel.setOption(StandardSocketOptions.TCP_NODELAY, true);
+			socketChannel.socket().setTcpNoDelay(true);
+			socketChannel.socket().setKeepAlive(true);
 			return socketChannel;
 		}
 

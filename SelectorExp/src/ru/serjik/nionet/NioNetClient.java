@@ -24,6 +24,8 @@ public class NioNetClient
 		{
 			socket = SocketChannel.open();
 			socket.configureBlocking(false);
+			socket.socket().setTcpNoDelay(true);
+			socket.socket().setKeepAlive(true);
 			socket.connect(new InetSocketAddress(host, port));
 		}
 		catch (IOException e)
