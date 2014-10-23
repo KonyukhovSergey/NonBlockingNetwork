@@ -49,7 +49,7 @@ public class MainActivity extends Activity implements NioNetClientListener
 			String message = editMessage.getText().toString();
 			editMessage.setText("");
 
-			addMessage(message + "\r\n");
+			addMessage(message);
 
 			synchronized (v)
 			{
@@ -60,7 +60,7 @@ public class MainActivity extends Activity implements NioNetClientListener
 
 	private void addMessage(String text)
 	{
-		textMessages.append(text);
+		textMessages.append(text + "\r\n");
 		if (textMessages.getText().length() > 32768)
 		{
 			CharSequence data = textMessages.getText();
@@ -119,7 +119,7 @@ public class MainActivity extends Activity implements NioNetClientListener
 	public void onMessage(ClientData client, final String message)
 	{
 		Log.v("nionet", "onMessage " + message);
-		
+
 		runOnUiThread(new Runnable()
 		{
 			@Override
@@ -128,7 +128,7 @@ public class MainActivity extends Activity implements NioNetClientListener
 				addMessage(message);
 			}
 		});
-		
+
 	}
 
 	@Override
@@ -151,7 +151,7 @@ public class MainActivity extends Activity implements NioNetClientListener
 	public void onDisconnect()
 	{
 		Log.v("nionet", "onDisconnect");
-		
+
 		runOnUiThread(new Runnable()
 		{
 			@Override
