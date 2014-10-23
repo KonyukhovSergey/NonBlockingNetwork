@@ -34,7 +34,7 @@
 		<link>
 			<name>nionetsrc</name>
 			<type>2</type>
-			<location>C:/progs/git/nionet/src</location>
+			<locationURI>WORKSPACE_LOC/nionet/src</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>
