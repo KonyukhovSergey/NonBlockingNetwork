@@ -1,12 +1,10 @@
 package com.example.nionetandr;
 
-import java.util.TimerTask;
-
 import ru.serjik.nionet.ClientData;
 import ru.serjik.nionet.NioNetClient;
 import ru.serjik.nionet.NioNetClientListener;
 import android.os.Bundle;
-import android.os.Handler;
+import android.os.SystemClock;
 import android.app.Activity;
 import android.util.Log;
 import android.view.Menu;
@@ -21,7 +19,8 @@ public class MainActivity extends Activity implements NioNetClientListener
 	private Button buttonSend;
 
 	private NioNetClient client;
-	
+	private Thread thread;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
@@ -31,28 +30,32 @@ public class MainActivity extends Activity implements NioNetClientListener
 		textMessages = (TextView) findViewById(R.id.text_messages);
 		editMessage = (EditText) findViewById(R.id.edit_message);
 		buttonSend = (Button) findViewById(R.id.button_send);
-		
 		client = new NioNetClient("serjik.noip.me", 11001, this);
+
+		thread = new Thread(runnableNet);
+		thread.start();
+
 	}
-	
+
+	private Runnable runnableNet = new Runnable()
+	{
+		@Override
+		public void run()
+		{
+			while (client.state != NioNetClient.STATE_DISCONNECTED)
+			{
+				client.tick();
+				SystemClock.sleep(33);
+			}
+		}
+	};
+
 	@Override
 	protected void onDestroy()
 	{
-		netHandler.removeCallbacks(netTick);
 		client.close();
 		super.onDestroy();
-	}	
-	
-	private Runnable netTick = new Runnable()
-	{
-		public void run()
-		{
-			client.tick();
-			netHandler.postDelayed(this, 33);
-		}
-	};
-	
-	private Thread netThread = new 
+	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu)
