@@ -3,8 +3,12 @@ package com.example.nionetandr;
 import ru.serjik.nionet.ClientData;
 import ru.serjik.nionet.NioNetClient;
 import ru.serjik.nionet.NioNetClientListener;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.StrictMode;
 import android.os.SystemClock;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.text.Layout;
 import android.util.Log;
@@ -22,7 +26,7 @@ public class MainActivity extends Activity implements NioNetClientListener
 	private Button buttonSend;
 
 	private NioNetClient client;
-	private Thread thread;
+	private Handler handler;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -30,15 +34,23 @@ public class MainActivity extends Activity implements NioNetClientListener
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
+		permitNetwork();
+
 		textMessages = (TextView) findViewById(R.id.text_messages);
 		editMessage = (EditText) findViewById(R.id.edit_message);
 		buttonSend = (Button) findViewById(R.id.button_send);
 		buttonSend.setOnClickListener(onButtonSendClick);
 		client = new NioNetClient("serjik.noip.me", 11001, this);
 
-		thread = new Thread(runnableNet);
-		thread.start();
+		handler = new Handler();
+		handler.postDelayed(runnableNet, 20);
+	}
 
+	@TargetApi(Build.VERSION_CODES.GINGERBREAD)
+	private void permitNetwork()
+	{
+		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
+		StrictMode.setThreadPolicy(policy);
 	}
 
 	private OnClickListener onButtonSendClick = new OnClickListener()
@@ -48,13 +60,8 @@ public class MainActivity extends Activity implements NioNetClientListener
 		{
 			String message = editMessage.getText().toString();
 			editMessage.setText("");
-
 			addMessage(message);
-
-			synchronized (v)
-			{
-				client.send(message);
-			}
+			client.send(message);
 		}
 	};
 
@@ -92,10 +99,11 @@ public class MainActivity extends Activity implements NioNetClientListener
 		@Override
 		public void run()
 		{
-			while (client.state != NioNetClient.STATE_DISCONNECTED)
+			if (client.state != NioNetClient.STATE_DISCONNECTED)
 			{
 				client.tick();
 				SystemClock.sleep(33);
+				handler.postDelayed(this, 20);
 			}
 		}
 	};
@@ -110,7 +118,6 @@ public class MainActivity extends Activity implements NioNetClientListener
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu)
 	{
-		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
@@ -119,48 +126,21 @@ public class MainActivity extends Activity implements NioNetClientListener
 	public void onMessage(ClientData client, final String message)
 	{
 		Log.v("nionet", "onMessage " + message);
-
-		runOnUiThread(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				addMessage(message);
-			}
-		});
-
+		addMessage(message);
 	}
 
 	@Override
 	public void onConnect()
 	{
 		Log.v("nionet", "onConnect");
-		// TODO Auto-generated method stub
-		runOnUiThread(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				addMessage("connected");
-			}
-		});
-
+		addMessage("connected");
 	}
 
 	@Override
 	public void onDisconnect()
 	{
 		Log.v("nionet", "onDisconnect");
-
-		runOnUiThread(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				addMessage("disconnected");
-			}
-		});
-		// TODO Auto-generated method stub
+		addMessage("disconnected");
 	}
 
 }

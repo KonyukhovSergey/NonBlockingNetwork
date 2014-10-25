@@ -1,20 +1,3 @@
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.StandardSocketOptions;
-import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-import java.nio.channels.spi.SelectorProvider;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import ru.serjik.nionet.ClientAcceptor;
 import ru.serjik.nionet.ClientData;
 import ru.serjik.nionet.ConsoleLineReader;
 import ru.serjik.nionet.NioNetServer;
@@ -54,13 +37,15 @@ public class Prog
 				@Override
 				public void onDisconnect(ClientData client)
 				{
-					server.broadcast(client.toString() + " has removed");					
+					System.out.println("disconnected: " + client.toString());
+					server.broadcast(client.toString() + " has removed");
 				}
 
 				@Override
 				public void onAccept(ClientData client)
 				{
-					server.broadcast(client.toString() + " has joined");					
+					System.out.println("connected: " + client.toString());
+					server.broadcast(client.toString() + " has joined");
 				}
 			});
 
@@ -78,6 +63,7 @@ public class Prog
 				}
 				else if (cmd.length() > 0)
 				{
+					System.out.println("broadcast: " + cmd);
 					server.broadcast("from server: " + cmd);
 				}
 			}

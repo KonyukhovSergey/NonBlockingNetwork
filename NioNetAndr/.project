@@ -32,9 +32,9 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>nionetsrc</name>
+			<name>noinet</name>
 			<type>2</type>
-			<locationURI>WORKSPACE_LOC/nionet/src</locationURI>
+			<location>C:/dev/git/nionet/src</location>
 		</link>
 	</linkedResources>
 </projectDescription>
