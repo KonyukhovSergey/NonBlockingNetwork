@@ -33,16 +33,27 @@ public class Prog
 							client.send(passh + ";captcha");
 							state = 2;
 						}
-						else
+						else if (message.equals("welcome"))
 						{
 							state = 3;
 						}
+						else
+						{
+							client.close();
+							return;
+						}
+						break;
 					case 2:
 						if (message.equals("welcome"))
 						{
-
+							state = 3;
 						}
-						state = 3;
+						else
+						{
+							client.close();
+							return;
+						}
+
 						break;
 					}
 
